@@ -1,5 +1,5 @@
-import { PrismaClient } from "@crudcup/db";
+import { PrismaClient } from '@crudcup/db'
 
-export const db = new PrismaClient();
+export const db = new PrismaClient()
 
-export default db;
+export default db
