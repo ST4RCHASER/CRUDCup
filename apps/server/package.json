@@ -8,7 +8,8 @@
     "@crudcup/db": "workspace:*",
     "@elysiajs/cors": "0.5.2",
     "@elysiajs/swagger": "0.5.2",
-    "elysia": "0.5.20",
+    "@sinclair/typebox": "^0.29.4",
+    "elysia": "0.6.0-alpha.2",
     "node-cron": "^3.0.2"
   },
   "devDependencies": {
