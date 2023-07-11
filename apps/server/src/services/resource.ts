@@ -1,4 +1,5 @@
 import db from '../db'
+import { CupSettings } from '../types'
 const expiredDays = process.env.EXPIRED_DAYS || 7
 
 export async function updateEntity(
@@ -287,6 +288,8 @@ export async function getCupFormSlug(cupSlug: string) {
     },
     select: {
       id: true,
+      secret: true,
+      permissionLevel: true,
       createdAt: true,
       updatedAt: true,
       resource: {
@@ -306,6 +309,8 @@ export async function getCupFormSlug(cupSlug: string) {
   expiredAt.setDate(expiredAt.getDate() + +expiredDays)
   return {
     cupId: cupSlug,
+    hasSecret: !!cup?.secret,
+    defaultPermissionLevel: cup?.permissionLevel || 'READ_WRITE',
     resources: cup?.resource?.map(resource => resource.name) || [],
     createdAt: cup?.createdAt || new Date(),
     expiredAt,
@@ -337,4 +342,68 @@ export async function deleteCup(cupSlag: string) {
   return {
     cupId: cupSlag,
   }
+}
+
+export async function verifyCup(cupSlug: string, method: string, secret?: string) {
+  if (!cupSlug.match(/^[a-zA-Z0-9]{16,64}$/))
+    throw new Error(
+      'Invalid cupId only a-z, A-Z, 0-9 and length 16-64 characters are allowed'
+    )
+  const cup = await db.cup.findUnique({
+    where: {
+      slug: cupSlug,
+    },
+    select: {
+      secret: true,
+      permissionLevel: true,
+    }
+  })
+  if (cup) {
+    switch (cup.permissionLevel) {
+      case 'READ_ONLY':
+        if (method === 'GET') return
+      case 'NONE':
+        if (secret != cup.secret) throw new Error(secret ? 'Invalid secret' : 'Secret required for this cup')
+        break
+    }
+  }
+}
+
+export async function updateCupSettings(cupSlug: string, settings: CupSettings) {
+  if (settings.secret && !settings.secret.match(/^[a-zA-Z0-9]{16,64}$/)) {
+    throw new Error('Invalid secret only a-z, A-Z, 0-9 and length 16-64 characters are allowed')
+  }
+
+  if (settings.permissionLevel && !['READ_ONLY', 'READ_WRITE', 'NONE'].includes(settings.permissionLevel)) {
+    throw new Error('Invalid permissionLevel only READ_ONLY, READ_WRITE, NONE are allowed')
+  }
+
+  const cup = await db.cup.findUnique({
+    where: {
+      slug: cupSlug,
+    },
+    select: {
+      id: true,
+      permissionLevel: true,
+      secret: true,
+    },
+  })
+  if (!cup) {
+    return await db.cup.create({
+      data: {
+        slug: cupSlug,
+        permissionLevel: settings.permissionLevel,
+        secret: settings.secret
+      },
+    })
+  }
+  return await db.cup.update({
+    where: {
+      id: cup.id,
+    },
+    data: {
+      permissionLevel: settings.permissionLevel,
+      secret: settings.secret
+    },
+  })
 }

@@ -9,12 +9,20 @@ generator client {
   output        = "../dist/client"
 }
 
+enum PermissionLevel {
+  NONE
+  READ_ONLY
+  READ_WRITE
+}
+
 model Cup {
-  id        String     @id @default(uuid())
-  slug      String     @unique @db.VarChar(64)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  resource  Resource[]
+  id              String          @id @default(uuid())
+  slug            String          @unique @db.VarChar(64)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  secret          String?         @db.VarChar(64)
+  permissionLevel PermissionLevel @default(READ_WRITE)
+  resource        Resource[]
 }
 
 model Resource {

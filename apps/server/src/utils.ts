@@ -1,10 +1,3 @@
-export function verifyCupSlug(cupSlug: string) {
-  if (!cupSlug.match(/^[a-zA-Z0-9]{16,64}$/))
-    throw new Error(
-      'Invalid cupId only a-z, A-Z, 0-9 and length 16-64 characters are allowed'
-    )
-}
-
 export function verifyResourceName(resourceName: string) {
   if (!resourceName.match(/^[a-zA-Z0-9]{1,64}$/))
     throw new Error(
@@ -19,4 +12,11 @@ export function verifyEntityId(entityId: string) {
     )
   )
     throw new Error('Invalid entityId only uuid v4 is allowed')
+}
+
+export function convertSecretKey(authorization: string | null) {
+  if (!authorization) return undefined
+  const split = authorization.split(' ')
+  if (split[0] != 'Basic') throw new Error('Invalid authorization type: ' + split[0])
+  return split[1]
 }

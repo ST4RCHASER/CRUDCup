@@ -7,12 +7,14 @@ import {
   deleteEntity,
   deleteResource,
   getCupFormSlug,
+  verifyCup,
   getEntities,
   getEntity,
   purgeExpiredCups,
   updateEntity,
+  updateCupSettings,
 } from './services/resource'
-import { verifyCupSlug, verifyEntityId, verifyResourceName } from './utils'
+import { convertSecretKey, verifyEntityId, verifyResourceName } from './utils'
 
 export const app = new Elysia()
   .use(cors({ origin: '*' }))
@@ -28,11 +30,12 @@ export const app = new Elysia()
   .group(
     '/:cupId',
     {
-      beforeHandle: async ({ set, params: { cupId } }) => verifyCupSlug(cupId),
+      beforeHandle: async ({ set, params: { cupId }, request: { method }, headers: { authorization } }) => verifyCup(cupId, method, convertSecretKey(authorization)),
     },
     cupGroup =>
       cupGroup
         .get('/', async ({ params: { cupId } }) => getCupFormSlug(cupId))
+        .put('/', async ({ params: { cupId }, request: { json } }) => updateCupSettings(cupId, await json()))
         .delete('/', async ({ params: { cupId } }) => deleteCup(cupId))
         .group(
           '/:resourceId',
