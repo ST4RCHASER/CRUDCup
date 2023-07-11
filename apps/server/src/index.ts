@@ -16,20 +16,20 @@ export const app = new Elysia()
   .group('/:cupId', {
     beforeHandle: async ({ set, params: { cupId } }) => verifyCupSlug(cupId),
   }, (cupGroup) => cupGroup
-    .get('/', async ({ params: { cupId } }) => await getCupFormSlug(cupId))
-    .delete('/', async ({ params: { cupId } }) => await deleteCup(cupId))
+    .get('/', async ({ params: { cupId } }) => getCupFormSlug(cupId))
+    .delete('/', async ({ params: { cupId } }) => deleteCup(cupId))
     .group('/:resourceId', {
-      beforeHandle: ({ params: { resourceId } }) => console.log("ResourceId", resourceId),
+      beforeHandle: ({ params: { resourceId } }) => verifyResourceName(resourceId),
     }, (resourceGroup) => resourceGroup
-      .get('/', async ({ params: { cupId, resourceId } }) => await getEntities(cupId, resourceId))
-      .post('/', async ({ params: { cupId, resourceId }, body }) => await createResourceEntity(cupId, resourceId, body))
-      .delete('/', async ({ params: { cupId, resourceId } }) => await deleteResource(cupId, resourceId))
+      .get('/', async ({ params: { cupId, resourceId } }) => getEntities(cupId, resourceId))
+      .post('/', async ({ params: { cupId, resourceId }, body }) => createResourceEntity(cupId, resourceId, body))
+      .delete('/', async ({ params: { cupId, resourceId } }) => deleteResource(cupId, resourceId))
       .group('/:entityId', {
-        beforeHandle: ({ params: { entityId } }) => console.log("EntityId", entityId),
+        beforeHandle: ({ params: { entityId } }) => verifyEntityId(entityId),
       }, (entityGroup) => entityGroup
-        .get('/', async ({ params: { cupId, resourceId, entityId } }) => await getEntity(cupId, resourceId, entityId))
-        .put('/', async ({ params: { cupId, resourceId, entityId }, body }) => await updateEntity(cupId, resourceId, entityId, body))
-        .delete('/', async ({ params: { cupId, resourceId, entityId } }) => await deleteEntity(cupId, resourceId, entityId))
+        .get('/', async ({ params: { cupId, resourceId, entityId } }) => getEntity(cupId, resourceId, entityId))
+        .put('/', async ({ params: { cupId, resourceId, entityId }, body }) => updateEntity(cupId, resourceId, entityId, body))
+        .delete('/', async ({ params: { cupId, resourceId, entityId } }) => deleteEntity(cupId, resourceId, entityId))
       )
     )
   ).listen({
